@@ -6,13 +6,30 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		57811E162D835A2100A010B3 /* BullittSdkFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 57811E152D835A2100A010B3 /* BullittSdkFoundation */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		57811E042D83572C00A010B3 /* BullittSdkDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BullittSdkDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		57318B2A2D846865002D76AA /* Exceptions for "BullittSdkDemo" folder in "BullittSdkDemo" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 57811E032D83572C00A010B3 /* BullittSdkDemo */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		57811E062D83572C00A010B3 /* BullittSdkDemo */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				57318B2A2D846865002D76AA /* Exceptions for "BullittSdkDemo" folder in "BullittSdkDemo" target */,
+			);
 			path = BullittSdkDemo;
 			sourceTree = "<group>";
 		};
@@ -23,6 +40,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				57811E162D835A2100A010B3 /* BullittSdkFoundation in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +83,7 @@
 			);
 			name = BullittSdkDemo;
 			packageProductDependencies = (
+				57811E152D835A2100A010B3 /* BullittSdkFoundation */,
 			);
 			productName = BullittSdkDemo;
 			productReference = 57811E042D83572C00A010B3 /* BullittSdkDemo.app */;
@@ -94,6 +113,9 @@
 			);
 			mainGroup = 57811DFB2D83572C00A010B3;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				57811E142D835A2100A010B3 /* XCLocalSwiftPackageReference "../bullitt_ios_sdk/BullittSdkFoundation" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 57811E052D83572C00A010B3 /* Products */;
 			projectDirPath = "";
@@ -256,11 +278,14 @@
 				DEVELOPMENT_TEAM = 2964ZL8ST3;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BullittSdkDemo/Info.plist;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "The app uses bluetooth to connect to satellite links.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -284,11 +309,14 @@
 				DEVELOPMENT_TEAM = 2964ZL8ST3;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BullittSdkDemo/Info.plist;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "The app uses bluetooth to connect to satellite links.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -324,6 +352,20 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		57811E142D835A2100A010B3 /* XCLocalSwiftPackageReference "../bullitt_ios_sdk/BullittSdkFoundation" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../bullitt_ios_sdk/BullittSdkFoundation;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		57811E152D835A2100A010B3 /* BullittSdkFoundation */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = BullittSdkFoundation;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 57811DFC2D83572C00A010B3 /* Project object */;
 }
