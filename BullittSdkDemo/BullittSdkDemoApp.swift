@@ -5,8 +5,8 @@
 //  Created by Larry Zeng on 3/13/25.
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 @main
 struct BullittSdkDemoApp: App {
