@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		57811E162D835A2100A010B3 /* BullittSdkFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 57811E152D835A2100A010B3 /* BullittSdkFoundation */; };
+		57D792152D88BF5D00FBEB11 /* BullittSdk in Frameworks */ = {isa = PBXBuildFile; productRef = 57D792142D88BF5D00FBEB11 /* BullittSdk */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -40,7 +40,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				57811E162D835A2100A010B3 /* BullittSdkFoundation in Frameworks */,
+				57D792152D88BF5D00FBEB11 /* BullittSdk in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -83,7 +83,7 @@
 			);
 			name = BullittSdkDemo;
 			packageProductDependencies = (
-				57811E152D835A2100A010B3 /* BullittSdkFoundation */,
+				57D792142D88BF5D00FBEB11 /* BullittSdk */,
 			);
 			productName = BullittSdkDemo;
 			productReference = 57811E042D83572C00A010B3 /* BullittSdkDemo.app */;
@@ -114,7 +114,7 @@
 			mainGroup = 57811DFB2D83572C00A010B3;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				57811E142D835A2100A010B3 /* XCLocalSwiftPackageReference "../bullitt_ios_sdk/BullittSdkFoundation" */,
+				57D792132D88BF5D00FBEB11 /* XCRemoteSwiftPackageReference "bullitt_ios_sdk_binary" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 57811E052D83572C00A010B3 /* Products */;
@@ -353,17 +353,22 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCLocalSwiftPackageReference section */
-		57811E142D835A2100A010B3 /* XCLocalSwiftPackageReference "../bullitt_ios_sdk/BullittSdkFoundation" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../bullitt_ios_sdk/BullittSdkFoundation;
+/* Begin XCRemoteSwiftPackageReference section */
+		57D792132D88BF5D00FBEB11 /* XCRemoteSwiftPackageReference "bullitt_ios_sdk_binary" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/bullitt-mobile/bullitt_ios_sdk_binary";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
 		};
-/* End XCLocalSwiftPackageReference section */
+/* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		57811E152D835A2100A010B3 /* BullittSdkFoundation */ = {
+		57D792142D88BF5D00FBEB11 /* BullittSdk */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = BullittSdkFoundation;
+			package = 57D792132D88BF5D00FBEB11 /* XCRemoteSwiftPackageReference "bullitt_ios_sdk_binary" */;
+			productName = BullittSdk;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

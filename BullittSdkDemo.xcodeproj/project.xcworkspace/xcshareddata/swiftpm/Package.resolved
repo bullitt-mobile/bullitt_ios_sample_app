@@ -1,0 +1,15 @@
+{
+  "originHash" : "9f6d8a5fdf869885adbb1c628470d4bd188c72cdb591ae2ed103a9c1c99bb29d",
+  "pins" : [
+    {
+      "identity" : "bullitt_ios_sdk_binary",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/bullitt-mobile/bullitt_ios_sdk_binary",
+      "state" : {
+        "branch" : "main",
+        "revision" : "6cf156d092a84f08ddef96ec9053d8712a9ca5c8"
+      }
+    }
+  ],
+  "version" : 3
+}
