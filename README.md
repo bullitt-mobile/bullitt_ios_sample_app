@@ -4,6 +4,10 @@
 
 The Bullitt SDK for iOS provides functionality for satellite device discovery, pairing, and communication. This guide demonstrates how to integrate the BullittSdkFoundation framework into your iOS application.
 
+## Documentation
+
+The documentation is hosted on [docs.bullitt.com/ios](https://docs.bullitt.com/ios).
+
 ## Pre-requisites
 
 - **Xcode**: Latest stable version for development
@@ -13,7 +17,7 @@ The Bullitt SDK for iOS provides functionality for satellite device discovery, p
   - An activated satellite service plan
 - Access credentials for the Bullitt SDK repository
 
-For satellite connection activation assistance, please contact the Bullitt support team at support@bullitt.com or through your provided account representative.
+For satellite connection activation assistance, please contact the Bullitt support team at <support@bullitt.com> or through your provided account representative.
 
 ## Installation
 
@@ -21,149 +25,33 @@ For satellite connection activation assistance, please contact the Bullitt suppo
 
 Add the BullittSdkFoundation package to your project:
 
-1. In Xcode, select File > Add Packages...
-2. Enter the Bullitt SDK repository URL
+1. In Xcode, select `File > Add Packages...`
+2. Enter the Bullitt SDK repository URL (<https://github.com/bullitt-mobile/bullitt_ios_sdk_binary>)
 3. Select the appropriate version
 4. Click Add Package
 
-### CocoaPods
+## Glossary
 
-Add the dependency to your Podfile:
-
-```ruby
-pod 'BullittSdkFoundation'
-```
-
-Then run:
-
-```bash
-pod install
-```
+- **IMSI**: International Mobile Subscriber Identity, a unique identifier for a satellite device.
+- **Pairing**: refers to connecting to a satellite device via Bluetooth. This happens before linking.
+- **Linking**: refers to the process of confirming the satellite device can be used. This happens after pairing, and _only a linked device_ is valid for further interaction such as sending messages.
 
 ## Initialization
 
-Initialize the SDK in your SwiftUI app:
+To initialize the SDK, use `BullittSdk.shared.initialize`, by passing in a `BSLogger` instance, and optionally a closure to handle the events emitted by the SDK. You can always access the event publisher by calling `BullittSdk.shared.getApi().globalEvents()`.
 
-```swift
-import BullittSdkFoundation
-import SwiftUI
+`ConnectionViewModel.swift` provides and example of how initialization can be used.
 
-@main
-struct YourApp: App {
-    @State var connectionVM: ConnectionViewModel
-    
-    init() {
-        // Initialize your connection view model
-        _connectionVM = State(initialValue: ConnectionViewModel())
-    }
-    
-    var body: some Scene {
-        WindowGroup {
-            ContentView()
-                .environment(connectionVM)
-        }
-    }
-}
-```
+## Permissions
 
-Create a connection view model to manage the SDK:
+Add the required permissions to your Info.plist. We use bluetooth permission to connect to the satellite devices, and location permission to automatically handle location requirement of check-in and SOS messages triggered from the physical buttons on the satellite devices.
 
-```swift
-import BullittSdkFoundation
-import Combine
-import SwiftUI
-
-// Implement logging
-struct Logger: BSLogger {
-    static let shared = Logger()
-    private init() {}
-    
-    func bsTrace(_ log: LogMessage, file: String, function: String, line: UInt) {
-        print("TRACE [\(file):\(line)] \(log)")
-    }
-    
-    func bsDebug(_ log: LogMessage, file: String, function: String, line: UInt) {
-        print("DEBUG [\(file):\(line)] \(log)")
-    }
-    
-    func bsInfo(_ log: LogMessage, file: String, function: String, line: UInt) {
-        print("INFO [\(file):\(line)] \(log)")
-    }
-    
-    func bsWarning(_ log: LogMessage, file: String, function: String, line: UInt) {
-        print("WARNING [\(file):\(line)] \(log)")
-    }
-    
-    func bsError(_ log: LogMessage, file: String, function: String, line: UInt) {
-        print("ERROR [\(file):\(line)] \(log)")
-    }
-}
-
-@Observable
-@MainActor
-class ConnectionViewModel {
-    private(set) var connection: BSPeripheralConnection?
-    private(set) var connectionDetails: BSBleDeviceStatus?
-    
-    init() {
-        try? BullittSdk.shared.initialize(logger: Logger.shared) { globalEvents, cancellables in
-            // Set up event handling
-            self.setupEventHandling(globalEvents: globalEvents, cancellables: &cancellables)
-        }
-        
-        // Check for existing linked device
-        Task {
-            self.connection = try await BullittSdk.shared.getApi().getLinkedDevice()
-        }
-    }
-    
-    private func setupEventHandling(globalEvents: AnyPublisher<SdkGlobalEvent, Never>, cancellables: inout Set<AnyCancellable>) {
-        // Handle device connection events
-        globalEvents
-            .map { event in
-                switch event {
-                case let .deviceLinked(connection),
-                     let .deviceUpdate(connection: connection, status: _),
-                     let .message(connection: connection, event: _):
-                    connection
-                case .deviceUnlinked:
-                    nil
-                }
-            }
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] (connection: BSPeripheralConnection?) in
-                self?.connection = connection
-                if connection == nil {
-                    self?.connectionDetails = nil
-                }
-            }
-            .store(in: &cancellables)
-        
-        // Handle device status updates
-        globalEvents
-            .compactMap { event in
-                if case let .deviceUpdate(connection: _, status: status) = event {
-                    return status
-                }
-                return nil
-            }
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] status in
-                self?.connectionDetails = status
-            }
-            .store(in: &cancellables)
-        
-        // Add more event handlers as needed
-    }
-    
-    var isLinked: Bool {
-        connection != nil
-    }
-    
-    var isConnected: Bool {
-        connectionDetails?.connectionStatus == .connected
-    }
-}
+```xml
+<key>NSBluetoothAlwaysUsageDescription</key>
+<string>This app uses Bluetooth to connect to satellite devices.</string>
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>This app uses location to send check-in and SOS messages.</string>
+<key>
 ```
 
 ## Core Features
@@ -176,7 +64,7 @@ Scan for available satellite devices:
 func scanForDevices() {
     Task {
         let scanStream = await BullittSdk.shared.getApi().listDevices()
-        
+
         do {
             for try await device in scanStream {
                 // Handle discovered device
@@ -191,7 +79,7 @@ func scanForDevices() {
 
 ### 2. Device Pairing
 
-Pair with a discovered device:
+Pairing comes in two stages: request pairing and confirmation. The client application should first call `requestDevicePairing` to initiate the pairing process. The function returns the IMSI of the satellite device. After validating that the user has the correct device, the client application should call `confirmDeviceLinking` to complete the pairing process.
 
 ```swift
 func link(_ peripheral: BlePeripheral, with userId: SmpUserId) async throws {
@@ -205,10 +93,10 @@ func link(_ peripheral: BlePeripheral, with userId: SmpUserId) async throws {
                 checkInNumber: userId
             )
         )
-    
+
     // Validate IMSI if needed
     // ...
-    
+
     // Confirm device linking
     connection = try await BullittSdk.shared.getApi().confirmDeviceLinking()
 }
@@ -216,7 +104,7 @@ func link(_ peripheral: BlePeripheral, with userId: SmpUserId) async throws {
 
 ### 3. Device Management
 
-Get the currently linked device:
+You can always get the currently linked device:
 
 ```swift
 func getLinkedDevice() async {
@@ -229,7 +117,7 @@ func getLinkedDevice() async {
 }
 ```
 
-Remove a linked device:
+, or remove a linked device:
 
 ```swift
 func forgetDevice() async {
@@ -239,23 +127,24 @@ func forgetDevice() async {
 
 ### 4. Sending Messages
 
-Send content to a connected satellite device:
+To send a satellite message, the client should first create a content bundle using the `createContentBundle` function. The client can then send the message using the `sendMessage` function.
 
 ```swift
-func sendMessage(to partnerId: SmpUserId, content: String) async throws {
+func sendTextMessage(to partnerId: SmpUserId, content: String) async throws {
+    // confirm we have a satellite device connection
     guard let connection = connection else {
         throw CustomError.noConnection
     }
-    
+
     // Create a content bundle
     let messageBundle = connection.createContentBundle(.text(.init(
         partnerId: partnerId,
         textMessage: content
     )))
-    
+
     // Send the message
     let result = try await connection.sendMessage(messageBundle).get()
-    
+
     // Handle result
     if result.result {
         // Message sent successfully
@@ -267,33 +156,38 @@ func sendMessage(to partnerId: SmpUserId, content: String) async throws {
 
 ### 5. Receiving Messages
 
-Handle incoming messages through the global event handler:
+Incoming messages are notified through the global event publisher. You may find the following filter helpful:
+
+```swift
+globalEvents
+    .compactMap { event in
+        if case let .message(connection: _, event: event) = event,
+            case let .messageBundleReceived(bundle) = event {
+            return bundle
+        }
+        return nil
+    }
+    .sink { bundle in
+        handleMessage(bundle)
+    }
+```
+
+where `handleMessage` is a function that processes the incoming message:
 
 ```swift
 private func handleMessage(_ bundle: ContentBundle) {
     let header = bundle.smpHeader
-    
+
     if case let .text(textContent) = bundle.content {
         // Process text message
         let textMessage = textContent.textMessage
         let senderId = textContent.partnerId
-        
+
         // Handle the received message in your application
     } else {
         Logger.shared.bsWarning("Unhandled content type: \(bundle.content)")
     }
 }
-```
-
-## Permissions
-
-Add the required permissions to your Info.plist:
-
-```xml
-<key>NSBluetoothAlwaysUsageDescription</key>
-<string>This app uses Bluetooth to connect to satellite devices.</string>
-<key>NSBluetoothPeripheralUsageDescription</key>
-<string>This app uses Bluetooth to connect to satellite devices.</string>
 ```
 
 ## Error Handling
@@ -303,41 +197,11 @@ The SDK uses Swift's `Result` type for operation results:
 - `Result.success`: Operation completed successfully
 - `Result.failure`: Operation failed with an error
 
-Common errors to handle:
-
-- Bluetooth connectivity issues
-- Device pairing failures
-- Message sending failures
-- Invalid user IDs
-
-Example error handling:
-
-```swift
-do {
-    try await sendMessage(to: partnerId, content: messageContent)
-} catch {
-    switch error {
-    case BleError.deviceNotFound:
-        // Handle device not found
-    case BleError.connectionFailed:
-        // Handle connection failure
-    default:
-        // Handle other errors
-        Logger.shared.bsError("Error sending message: \(error)")
-    }
-}
-```
-
 ## Best Practices
 
 1. Always check if a device is connected before attempting to send messages
-2. Handle Bluetooth permission requirements before scanning for devices
-3. Implement proper error handling for all SDK operations
-4. Use weak references in event handlers to avoid memory leaks
-5. Process all events on the main thread when updating UI
-6. Store user IDs securely
-7. Always validate user IDs before using them
-8. Implement a timeout mechanism for operations that might hang
+2. Implement proper error handling for all SDK operations
+3. Implement a timeout mechanism for operations that might hang
 
 ## UI Integration Examples
 
@@ -347,13 +211,13 @@ do {
 struct ConnectionControlView: View {
     @Environment(ConnectionViewModel.self) var connectionVM
     @State var showScanningSheet = false
-    
+
     var body: some View {
         VStack {
             if connectionVM.isLinked {
                 // Show connected device information
                 Text("Device Connected")
-                
+
                 Button("Disconnect") {
                     Task { await connectionVM.forgetDevice() }
                 }
@@ -377,10 +241,10 @@ struct ConnectionControlView: View {
 struct DeviceScanningView: View {
     @Environment(ConnectionViewModel.self) var connectionVM
     @Environment(\.dismiss) var dismiss
-    
+
     @State var scannedDevices: [BlePeripheral] = []
     @State var isScanning = false
-    
+
     var body: some View {
         NavigationStack {
             List {
@@ -407,7 +271,7 @@ struct DeviceScanningView: View {
                         }
                     }
                 }
-                
+
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") {
                         dismiss()
@@ -416,14 +280,14 @@ struct DeviceScanningView: View {
             }
         }
     }
-    
+
     func startScanning() {
         isScanning = true
         scannedDevices = []
-        
+
         Task {
             let scanStream = await BullittSdk.shared.getApi().listDevices()
-            
+
             do {
                 for try await device in scanStream {
                     if !scannedDevices.contains(where: { $0.satDevice.id == device.satDevice.id }) {
@@ -433,11 +297,11 @@ struct DeviceScanningView: View {
             } catch {
                 // Handle scanning error
             }
-            
+
             isScanning = false
         }
     }
-    
+
     func stopScanning() {
         // Cancel scanning task
         isScanning = false
