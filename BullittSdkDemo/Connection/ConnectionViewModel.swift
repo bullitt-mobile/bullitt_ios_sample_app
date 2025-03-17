@@ -13,24 +13,24 @@ struct Logger: BSLogger {
     static let shared = Logger()
     private init() {}
 
-    func bsTrace(_ log: LogMessage, file: String, function _: String, line: UInt) {
-        print("TRACE [\(file):\(line)] \(log)")
+    func bsTrace(_ log: LogMessage) {
+        print("TRACE \(log)")
     }
 
-    func bsDebug(_ log: LogMessage, file: String, function _: String, line: UInt) {
-        print("DEBUG [\(file):\(line)] \(log)")
+    func bsDebug(_ log: LogMessage) {
+        print("DEBUG \(log)")
     }
 
-    func bsInfo(_ log: LogMessage, file: String, function _: String, line: UInt) {
-        print("INFO [\(file):\(line)] \(log)")
+    func bsInfo(_ log: LogMessage) {
+        print("INFO \(log)")
     }
 
-    func bsWarning(_ log: LogMessage, file: String, function _: String, line: UInt) {
-        print("WARNING [\(file):\(line)] \(log)")
+    func bsWarning(_ log: LogMessage) {
+        print("WARNING \(log)")
     }
 
-    func bsError(_ log: LogMessage, file: String, function _: String, line: UInt) {
-        print("ERROR [\(file):\(line)] \(log)")
+    func bsError(_ log: LogMessage) {
+        print("ERROR \(log)")
     }
 }
 
