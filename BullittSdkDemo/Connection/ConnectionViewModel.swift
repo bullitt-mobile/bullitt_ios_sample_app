@@ -81,13 +81,13 @@ class ConnectionViewModel {
             globalEvents
                 .compactMap { event in
                     if case let .message(connection: _, event: event) = event,
-                       case let .messageBundleReceived(bundle) = event {
+                       case let .contentBundleReceived(bundle) = event {
                         return bundle
                     }
                     return nil
                 }
                 .receive(on: DispatchQueue.main)
-                .sink { [weak self] (bundle: ContentBundle) in
+                .sink { [weak self] (bundle: BSContentBundle) in
                     self?.handleMessage(bundle)
                 }
                 .store(in: &cancellables)
@@ -103,10 +103,10 @@ class ConnectionViewModel {
     }
 
     var isConnected: Bool {
-        connectionDetails?.connectionStatus == .connected
+        connectionDetails?.bleConnectionStatus == .connected
     }
 
-    private func handleMessage(_ bundle: ContentBundle) {
+    private func handleMessage(_ bundle: BSContentBundle) {
         let header = bundle.smpHeader
         if case let .text(textContent) = bundle.content {
             let message = Message(
@@ -123,7 +123,7 @@ class ConnectionViewModel {
         }
     }
 
-    func link(_ peripheral: BlePeripheral, with userId: SmpUserId) async throws(BleError) {
+    func link(_ peripheral: BSBlePeripheral, with userId: BSSmpUserId) async throws(BSBleError) {
         let imsi = try await BullittSdk.shared.getApi()
             .requestDevicePairing(
                 peripheral: peripheral,

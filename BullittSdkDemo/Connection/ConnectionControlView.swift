@@ -30,7 +30,7 @@ struct ConnectionControlView: View {
     private var deviceInfoSection: some View {
         if let details = connectionVM.connectionDetails {
             Section {
-                InfoRow(title: "Bluetooth Connection", value: String(describing: details.connectionStatus))
+                InfoRow(title: "Bluetooth Connection", value: String(describing: details.bleConnectionStatus))
                 InfoRow(title: "Satellite Connection", value: String(describing: details.satConnectionStatus))
             } header: {
                 Text("Connection Information")

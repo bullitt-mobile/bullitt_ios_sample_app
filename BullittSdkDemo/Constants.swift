@@ -7,6 +7,6 @@
 import BullittSdkFoundation
 
 enum Constants {
-    static let SELF_USER_ID = SmpUserId("14045551001")!
-    static let PARTNER_USER_ID = SmpUserId("14045551002")!
+    static let SELF_USER_ID = BSSmpUserId("14045551001")!
+    static let PARTNER_USER_ID = BSSmpUserId("14045551002")!
 }

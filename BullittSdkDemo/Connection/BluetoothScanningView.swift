@@ -7,8 +7,8 @@
 import BullittSdkFoundation
 import SwiftUI
 
-extension BlePeripheral: @retroactive Hashable {
-    public static func == (lhs: BullittSdkFoundation.BlePeripheral, rhs: BullittSdkFoundation.BlePeripheral) -> Bool {
+extension BSBlePeripheral: @retroactive Hashable {
+    public static func == (lhs: BSBlePeripheral, rhs: BSBlePeripheral) -> Bool {
         lhs.satDevice.id == rhs.satDevice.id
     }
 
@@ -26,7 +26,7 @@ struct BluetoothScanningView: View {
 
     @State var showInvalidUserIdAlert = false
 
-    @State var scannedPeripherals: Set<BlePeripheral> = []
+    @State var scannedPeripherals: Set<BSBlePeripheral> = []
     @State var scanTask: Task<Void, Never>?
     @State var connectingTask: Task<Void, Never>?
 
@@ -93,7 +93,7 @@ struct BluetoothScanningView: View {
     }
 
     @ViewBuilder
-    private func bluetoothItem(peripheral: SatDevice) -> some View {
+    private func bluetoothItem(peripheral: BSSatDevice) -> some View {
         HStack {
             VStack(alignment: .leading) {
                 Text(peripheral.name ?? "Unknown")
@@ -116,7 +116,9 @@ struct BluetoothScanningView: View {
             defer { scanTask = nil }
             scannedPeripherals.removeAll()
 
-            let scanStream = await BullittSdk.shared.getApi().listDevices()
+            let scanStream = await BullittSdk.shared.getApi().listDevices().filter { peripheral in
+                peripheral.satDevice.name != nil
+            }
 
             do {
                 for try await device in scanStream {
@@ -130,11 +132,11 @@ struct BluetoothScanningView: View {
         }
     }
 
-    func connect(_ peripheral: BlePeripheral, with userId: String) {
+    func connect(_ peripheral: BSBlePeripheral, with userId: String) {
         connectingTask = Task {
             defer { connectingTask = nil }
 
-            guard let parsedUserId = SmpUserId(userId) else {
+            guard let parsedUserId = BSSmpUserId(userId) else {
                 showInvalidUserIdAlert = true
                 return
             }

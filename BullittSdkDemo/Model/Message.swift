@@ -30,7 +30,7 @@ final class Message {
     var messageId: String
     var timestamp: Date
     var content: String
-    var partner: SmpUserId
+    var partner: BSSmpUserId
     var isSending: Bool
     var sendingState: SendingState
 
@@ -38,7 +38,7 @@ final class Message {
         messageId: String,
         timestamp: Date = .now,
         content: String,
-        partner: SmpUserId,
+        partner: BSSmpUserId,
         isSending: Bool,
         sendingState: SendingState
     ) {

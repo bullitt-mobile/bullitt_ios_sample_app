@@ -129,12 +129,12 @@ struct MessagingView: View {
 }
 
 private struct SetUserId: View {
-    @Binding var userId: SmpUserId
+    @Binding var userId: BSSmpUserId
     @State var userIdInput: String
     @State var showInvalidUserIdAlert = false
     @Environment(\.dismiss) var dismiss
 
-    init(userId: Binding<SmpUserId>) {
+    init(userId: Binding<BSSmpUserId>) {
         _userId = userId
         _userIdInput = State(initialValue: String(userId.wrappedValue))
     }
@@ -148,7 +148,7 @@ private struct SetUserId: View {
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button("Done") {
-                    if let newUserId = SmpUserId(userIdInput) {
+                    if let newUserId = BSSmpUserId(userIdInput) {
                         userId = newUserId
                         dismiss()
                     } else {
