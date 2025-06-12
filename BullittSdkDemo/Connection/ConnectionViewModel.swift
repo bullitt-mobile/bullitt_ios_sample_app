@@ -51,9 +51,12 @@ class ConnectionViewModel {
                     case let .deviceLinked(connection),
                          .deviceUpdate(connection: let connection, status: _),
                          .message(connection: let connection, event: _):
-                        connection
+                        return connection
                     case .deviceUnlinked:
-                        nil
+                        return nil
+                    @unknown default:
+                        print("Unknown event: \(event)")
+                        return nil
                     }
                 }
                 .receive(on: DispatchQueue.main)
@@ -94,7 +97,7 @@ class ConnectionViewModel {
         }
 
         Task {
-            self.connection = try await BullittSdk.shared.getApi().getLinkedDevice()
+            self.connection = try BullittSdk.shared.getApi().getLinkedDevice()
         }
     }
 

@@ -6,8 +6,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/bullitt-mobile/bullitt_ios_sdk_binary",
       "state" : {
-        "revision" : "b102ae8ad119a8831259282ccf2ad433652f13cd",
-        "version" : "1.0.0"
+        "revision" : "7bbcc5e7fe42778df77803c8575f8e79800d5b79",
+        "version" : "1.2.0"
       }
     }
   ],

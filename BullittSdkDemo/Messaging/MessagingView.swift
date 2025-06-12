@@ -124,7 +124,7 @@ struct MessagingView: View {
 
         let result = try await connection.sendMessage(messageBundle).get()
 
-        Logger.shared.bsInfo("Sent successful: \(result.result)")
+        Logger.shared.bsInfo("Sent successful: \(result)")
     }
 }
 
