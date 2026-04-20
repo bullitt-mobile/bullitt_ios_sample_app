@@ -34,11 +34,19 @@ struct Logger: BSLogger {
     }
 }
 
+enum Load<T> {
+    case on(T)
+    case off(T)
+}
+
 @Observable
 @MainActor
 class ConnectionViewModel {
-    private(set) var connection: BSPeripheralConnection?
+    private(set) var linkedDevice: BSSatDevice?
+    private(set) var connection: (any BSConnectionWrapper)?
     private(set) var connectionDetails: BSBleDeviceStatus?
+
+    @ObservationIgnored
     private nonisolated let modelContainer: ModelContainer
 
     init(modelContainer: ModelContainer) {
@@ -46,23 +54,47 @@ class ConnectionViewModel {
 
         try? BullittSdk.shared.initialize(logger: Logger.shared) { globalEvents, cancellables in
             globalEvents
-                .map { event in
+                .compactMap { event in
                     switch event {
-                    case let .deviceLinked(connection),
-                         .deviceUpdate(connection: let connection, status: _),
-                         .message(connection: let connection, event: _):
-                        return connection
-                    case .deviceUnlinked:
-                        return nil
-                    @unknown default:
-                        print("Unknown event: \(event)")
+                    case let .deviceLinked(device):
+                        return Load.on(device)
+                    case let .deviceUnlinked(device):
+                        return Load.off(device)
+                    default: return nil
+                    }
+                }
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] (device: Load<BSSatDevice>) in
+                    switch device {
+                    case let .on(device):
+                        self?.linkedDevice = device
+                    case .off:
+                        self?.linkedDevice = nil
+                    }
+                }
+                .store(in: &cancellables)
+
+            globalEvents
+                .compactMap { event in
+                    switch event {
+                    case let .deviceConnected(connection):
+                        return Load.on(connection)
+                    case let .deviceDisconnected(connection):
+                        return Load.off(connection)
+                    default:
                         return nil
                     }
                 }
                 .receive(on: DispatchQueue.main)
-                .sink { [weak self] (connection: BSPeripheralConnection?) in
-                    self?.connection = connection
-                    if connection == nil {
+                .sink { [weak self] (connection: Load<any BSConnectionWrapper>) in
+                    switch connection {
+                    case let .on(connection):
+                        self?.connection = connection
+                    case .off:
+                        self?.connection = nil
+                    }
+
+                    if self?.connection == nil {
                         self?.connectionDetails = nil
                     }
                 }
@@ -70,7 +102,7 @@ class ConnectionViewModel {
 
             globalEvents
                 .compactMap { event in
-                    if case let .deviceUpdate(connection: _, status: status) = event {
+                    if case let .deviceStateUpdate(connection: _, state: status) = event {
                         return status
                     }
                     return nil
@@ -90,26 +122,25 @@ class ConnectionViewModel {
                     return nil
                 }
                 .receive(on: DispatchQueue.main)
-                .sink { [weak self] (bundle: BSContentBundle) in
+                .sink { [weak self] (bundle: BSSmpContentBundle) in
                     self?.handleMessage(bundle)
                 }
                 .store(in: &cancellables)
         }
 
-        Task {
-            self.connection = try BullittSdk.shared.getApi().getLinkedDevice()
-        }
+        linkedDevice = BullittSdk.shared.getApi().getLinkedDevice()
+        connection = try? BullittSdk.shared.getApi().getConnectedDevice()
     }
 
     var isLinked: Bool {
-        connection != nil
+        linkedDevice != nil
     }
 
     var isConnected: Bool {
-        connectionDetails?.bleConnectionStatus == .connected
+        connection != nil
     }
 
-    private func handleMessage(_ bundle: BSContentBundle) {
+    private func handleMessage(_ bundle: BSSmpContentBundle) {
         let header = bundle.smpHeader
         if case let .text(textContent) = bundle.content {
             let message = Message(
@@ -126,9 +157,9 @@ class ConnectionViewModel {
         }
     }
 
-    func link(_ peripheral: BSBlePeripheral, with userId: BSSmpUserId) async throws(BSBleError) {
+    func link(_ peripheral: BSBlePeripheral, with userId: BSSmpUserId) async throws(BSBleConnectionError) {
         let imsi = try await BullittSdk.shared.getApi()
-            .requestDevicePairing(
+            .requestDeviceLinking(
                 peripheral: peripheral,
                 config: .init(
                     userId: userId,
@@ -137,7 +168,7 @@ class ConnectionViewModel {
                 )
             )
 
-        // TODO: Confirm if user can connect with the imsi
+        // TODO: [Client] Confirm if user can connect with the imsi
         Logger.shared.bsInfo("Linking peripheral with IMSI: \(imsi)")
 
         connection = try await BullittSdk.shared.getApi().confirmDeviceLinking()

@@ -15,6 +15,8 @@ struct MessagingView: View {
 
     @State var showEditPartnerId = false
 
+    @FocusState private var messageInputFocused: Bool
+
     @Environment(ConnectionViewModel.self) var connectionVM
     @Environment(\.modelContext) var modelContext
 
@@ -53,9 +55,11 @@ struct MessagingView: View {
         .navigationDestination(isPresented: $showEditPartnerId) {
             SetUserId(userId: $partnerId)
         }
+        .onDisappear {
+            messageInputFocused = false
+        }
     }
 
-    @ViewBuilder
     var messageList: some View {
         ScrollView {
             LazyVStack(spacing: 2) {
@@ -65,13 +69,14 @@ struct MessagingView: View {
             }
         }
         .padding(.horizontal, 16)
+        .scrollDismissesKeyboard(.immediately)
     }
 
-    @ViewBuilder
     var inputArea: some View {
         HStack {
             TextField("Satellite Message", text: $messageDraft)
                 .lineLimit(5)
+                .focused($messageInputFocused)
 
             Button {
                 sendMessage()
@@ -106,7 +111,7 @@ struct MessagingView: View {
         let messageContent = messageDraft
         messageDraft = ""
 
-        let messageBundle = connection.createContentBundle(.text(.init(
+        let messageBundle = await connection.createContentBundle(.text(.init(
             partnerId: partnerId,
             textMessage: messageContent
         )))
@@ -122,7 +127,7 @@ struct MessagingView: View {
         modelContext.insert(message)
         try modelContext.save()
 
-        let result = try await connection.sendMessage(messageBundle).get()
+        let result = try await connection.sendMessage(bundle: messageBundle).get()
 
         Logger.shared.bsInfo("Sent successful: \(result)")
     }
@@ -141,8 +146,16 @@ private struct SetUserId: View {
 
     var body: some View {
         List {
-            TextField("User ID", text: $userIdInput)
-                .textContentType(.telephoneNumber)
+            Section {
+                TextField("User ID", text: $userIdInput)
+                    .textContentType(.telephoneNumber)
+            } header: {
+                Text("Edit Recipient Phone Number")
+            } footer: {
+                Text(
+                    "Recipient phone number with country code (e.g. 15551234567 for the US phone number +1 555-123-4567)"
+                )
+            }
         }
         .navigationBarBackButtonHidden()
         .toolbar {

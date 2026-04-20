@@ -7,16 +7,6 @@
 import BullittSdkFoundation
 import SwiftUI
 
-extension BSBlePeripheral: @retroactive Hashable {
-    public static func == (lhs: BSBlePeripheral, rhs: BSBlePeripheral) -> Bool {
-        lhs.satDevice.id == rhs.satDevice.id
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(satDevice.id)
-    }
-}
-
 struct BluetoothScanningView: View {
     @Environment(ConnectionViewModel.self) var connectionVM
     @Environment(\.dismiss) var dismiss
@@ -41,8 +31,8 @@ struct BluetoothScanningView: View {
     var body: some View {
         NavigationStack {
             List {
-                ForEach(Array(scannedPeripherals), id: \.satDevice.id) { peripheral in
-                    bluetoothItem(peripheral: peripheral.satDevice)
+                ForEach(Array(scannedPeripherals), id: \.identifier) { peripheral in
+                    bluetoothItem(peripheral: peripheral)
                         .onTapGesture {
                             showUserIdInput = true
                         }
@@ -92,8 +82,7 @@ struct BluetoothScanningView: View {
         }
     }
 
-    @ViewBuilder
-    private func bluetoothItem(peripheral: BSSatDevice) -> some View {
+    private func bluetoothItem(peripheral: BSBlePeripheral) -> some View {
         HStack {
             VStack(alignment: .leading) {
                 Text(peripheral.name ?? "Unknown")
@@ -116,11 +105,11 @@ struct BluetoothScanningView: View {
             defer { scanTask = nil }
             scannedPeripherals.removeAll()
 
-            let scanStream = await BullittSdk.shared.getApi().listDevices().filter { peripheral in
-                peripheral.satDevice.name != nil
-            }
-
             do {
+                let scanStream = try await BullittSdk.shared.getApi().listDevices().filter { peripheral in
+                    peripheral.name != nil
+                }
+
                 for try await device in scanStream {
                     scannedPeripherals.insert(device)
                 }

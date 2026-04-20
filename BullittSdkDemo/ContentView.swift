@@ -10,11 +10,24 @@ import SwiftUI
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Message]
 
     var body: some View {
-        NavigationStack {
-            ConnectionControlView()
+        TabView {
+            Tab {
+                NavigationStack {
+                    ConnectionControlView()
+                }
+            } label: {
+                Label("Device", systemImage: "personalhotspot")
+            }
+
+            Tab {
+                NavigationStack {
+                    MessagingView()
+                }
+            } label: {
+                Label("Messaging", systemImage: "message")
+            }
         }
     }
 }

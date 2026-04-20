@@ -9,7 +9,6 @@ import SwiftUI
 struct ConnectionControlView: View {
     @Environment(ConnectionViewModel.self) var connectionVM
     @State var showScanningSheet = false
-    @State var showMessagingView = false
 
     var body: some View {
         List {
@@ -18,9 +17,6 @@ struct ConnectionControlView: View {
 
             deviceInfoSection
         }
-        .navigationDestination(isPresented: $showMessagingView) {
-            MessagingView()
-        }
         .sheet(isPresented: $showScanningSheet) {
             BluetoothScanningView()
         }
@@ -28,26 +24,34 @@ struct ConnectionControlView: View {
 
     @ViewBuilder
     private var deviceInfoSection: some View {
-        if let details = connectionVM.connectionDetails {
-            Section {
-                InfoRow(title: "Bluetooth Connection", value: String(describing: details.bleConnectionStatus))
+        Section {
+            InfoRow(
+                title: "Bluetooth Connection",
+                value: connectionVM.connection == nil ? "Not Connected" : "Connected"
+            )
+            if let details = connectionVM.connectionDetails {
                 InfoRow(title: "Satellite Connection", value: String(describing: details.satConnectionStatus))
-            } header: {
-                Text("Connection Information")
             }
+        } header: {
+            Text("Connection Information")
+        }
 
+        if let linkedDevice = connectionVM.linkedDevice {
+            InfoRow(title: "Name", value: linkedDevice.name ?? "Unknown")
+            InfoRow(title: "ID", value: linkedDevice.id.uuidString)
+        }
+
+        if let info = connectionVM.connection?.deviceInfo {
             Section {
-                InfoRow(title: "Device Name", value: details.satDevice.name ?? "N/A")
-                InfoRow(title: "IMSI", value: details.deviceInfo?.imsi ?? "N/A")
-                InfoRow(title: "Firmware Version", value: details.deviceInfo?.osVersion ?? "N/A")
-                InfoRow(title: "Serial Number", value: details.deviceInfo?.serialNumber ?? "N/A")
+                InfoRow(title: "IMSI", value: info.imsi)
+                InfoRow(title: "Firmware Version", value: info.osVersion)
+                InfoRow(title: "Serial Number", value: info.serialNumber)
             } header: {
                 Text("Device Information")
             }
         }
     }
 
-    @ViewBuilder
     private var actionButtonsSection: some View {
         Section {
             if connectionVM.isLinked {
@@ -55,22 +59,15 @@ struct ConnectionControlView: View {
                     Task { await connectionVM.forget() }
                 } label: {
                     Text("Forget")
-                        .actionButtonLabelStyled()
                 }
-
-                Button {
-                    showMessagingView = true
-                } label: {
-                    Text("Messages")
-                        .actionButtonLabelStyled()
-                }
+                .buttonStyle(.glassProminent)
             } else {
                 Button {
                     showScanningSheet = true
                 } label: {
                     Text("Scan")
-                        .actionButtonLabelStyled()
                 }
+                .buttonStyle(.glassProminent)
             }
         }
         .listRowSeparator(.hidden)
@@ -89,16 +86,5 @@ private struct InfoRow: View {
             Text(value)
                 .bold()
         }
-    }
-}
-
-extension View {
-    @ViewBuilder
-    func actionButtonLabelStyled() -> some View {
-        frame(maxWidth: .infinity)
-            .padding()
-            .background(Color.blue)
-            .foregroundColor(.white)
-            .cornerRadius(10)
     }
 }
